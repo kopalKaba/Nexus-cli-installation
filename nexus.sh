@@ -60,17 +60,20 @@ print_step "📝 Creating Nexus node start script..."
 cat <<EOF > $HOME/start_nexus_node.sh
 #!/bin/bash
 cd \$HOME
-nexus > \$HOME/nexus_log.txt 2>&1
+echo "Starting Nexus CLI Node..." > \$HOME/nexus_log.txt
+nexus >> \$HOME/nexus_log.txt 2>&1
 EOF
 
 chmod +x $HOME/start_nexus_node.sh
 
-print_step "📟 Starting Nexus CLI node in a screen session..."
-# Check if the screen session already exists
+# Check if a screen session named 'nexus' exists
+print_step "📟 Checking for existing 'nexus' screen session..."
 if screen -list | grep -q "nexus"; then
-  echo -e "${YELLOW}⚠️ Screen session 'nexus' already exists. Reusing the session.${RESET}"
+  echo -e "${YELLOW}⚠️ Screen session 'nexus' already exists. Detaching...${RESET}"
+  screen -S nexus -X detach
 else
-  screen -dmS nexus $HOME/start_nexus_node.sh || fail_exit "Starting Nexus CLI node in screen"
+  print_step "📟 Starting Nexus CLI node in a screen session..."
+  screen -dmS nexus $HOME/start_nexus_node.sh || fail_exit "Failed to start Nexus CLI node in screen"
 fi
 
 print_step "${GREEN}✅ Nexus CLI node setup complete!${RESET}"
