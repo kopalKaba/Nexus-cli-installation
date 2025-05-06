@@ -23,8 +23,17 @@ cat << "EOF"
  ░░░░░░░░   ░░░░░   ░░░░░ ░░░░░░░░░░ ░░░░░       ░░░░░       
 EOF
 
-echo -e "${YELLOW}${BOLD}🚀 Nexus CLI Node Installation Script${RESET}" 
-echo -e "📣 Telegram Group: ${MAGENTA}https://t.me/KatayanAirdropGnC${RESET}"
+# Function to center text
+center() {
+  local text="$1"
+  local term_width=$(tput cols)
+  local text_length=${#text}
+  local padding=$(( (term_width - text_length) / 2 ))
+  printf "%*s%s\n" $padding "" "$text"
+}
+
+center "${YELLOW}${BOLD}🚀 Nexus CLI Node Installation Script${RESET}"
+center "📣 Telegram Group: ${MAGENTA}https://t.me/KatayanAirdropGnC${RESET}"
 echo
 
 # Function to display steps
@@ -55,19 +64,18 @@ curl https://cli.nexus.xyz/ | sh || fail_exit "Nexus CLI installation"
 read -p "🔑 Enter your Nexus Node ID (from app.nexus.xyz): " NODE_ID
 echo "$NODE_ID" > ~/.nexus/node-id
 
-print_step "📝 Creating Nexus node start script..."
-
+# Create startup script
 cat <<EOF > \$HOME/start_nexus_node.sh
 #!/bin/bash
-cd \$HOME
-nexus > \$HOME/nexus_log.txt 2>&1
+source \$HOME/.cargo/env
+nexus >> \$HOME/nexus_log.txt 2>&1
 EOF
 
 chmod +x \$HOME/start_nexus_node.sh
 
-print_step "📟 Starting Nexus CLI node in a screen session..."
-screen -dmS nexus \$HOME/start_nexus_node.sh
+print_step "🚀 Starting Nexus CLI node in a screen session..."
+screen -dmS nexus-node \$HOME/start_nexus_node.sh
 
 print_step "${GREEN}✅ Nexus CLI node setup complete!${RESET}"
-echo -e "\nTo view the node logs, run: ${YELLOW}screen -r nexus${RESET}"
-echo -e "To detach from the screen session, press: ${YELLOW}Ctrl+A then D${RESET}"
+echo -e "\nTo view the node logs, run: ${YELLOW}screen -r nexus-node${RESET}"
+echo -e "To detach from the screen session, press: ${YELLOW}Ctrl+A then Press D${RESET}"
