@@ -61,7 +61,7 @@ cat <<EOF > $HOME/start_nexus_node.sh
 #!/bin/bash
 cd \$HOME
 echo "Starting Nexus CLI Node..." > \$HOME/nexus_log.txt
-nexus >> \$HOME/nexus_log.txt 2>&1
+nexus >> \$HOME/nexus_log.txt 2>&1 &
 EOF
 
 chmod +x $HOME/start_nexus_node.sh
@@ -75,6 +75,10 @@ else
   print_step "📟 Starting Nexus CLI node in a screen session..."
   screen -dmS nexus $HOME/start_nexus_node.sh || fail_exit "Failed to start Nexus CLI node in screen"
 fi
+
+# Now, tail the logs in real-time within the screen session
+print_step "📑 Tailing Nexus logs in real-time..."
+screen -S nexus -X stuff "tail -f $HOME/nexus_log.txt$(echo -ne '\r')"
 
 print_step "${GREEN}✅ Nexus CLI node setup complete!${RESET}"
 echo -e "\nTo view the node logs, run: ${YELLOW}screen -r nexus${RESET}"
