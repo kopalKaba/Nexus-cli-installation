@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Color codes
 CYAN='\033[0;36m'
 LIGHTBLUE='\033[1;34m'
 RED='\033[1;31m'
@@ -27,12 +26,10 @@ echo -e "${YELLOW}${BOLD}🚀 Nexus CLI Node Installation Script${RESET}"
 echo -e "📣 Telegram Group: ${MAGENTA}https://t.me/KatayanAirdropGnC${RESET}"
 echo
 
-# Function to display steps
 print_step() {
   echo -e "\n${CYAN}$1${RESET}"
 }
 
-# Function to handle errors
 fail_exit() {
   echo -e "${RED}❌ $1 failed. Exiting.${RESET}"
   exit 1
@@ -66,7 +63,6 @@ EOF
 
 chmod +x $HOME/start_nexus_node.sh
 
-# Check if a screen session named 'nexus' exists
 print_step "📟 Checking for existing 'nexus' screen session..."
 if screen -list | grep -q "nexus"; then
   echo -e "${YELLOW}⚠️ Screen session 'nexus' already exists. Detaching...${RESET}"
@@ -76,14 +72,13 @@ else
   screen -dmS nexus $HOME/start_nexus_node.sh || fail_exit "Failed to start Nexus CLI node in screen"
 fi
 
-# Automatically answering 'y' for the existing account prompt
 print_step "✅ Automatically answering 'y' for existing account usage..."
 screen -S nexus -X stuff "y$(echo -ne '\r')"
 
-# Use nohup to tail logs and ensure it runs in the background
 print_step "📑 Tailing Nexus logs in background using nohup..."
 nohup tail -f $HOME/nexus_log.txt &
 
 print_step "${GREEN}✅ Nexus CLI node setup complete!${RESET}"
 echo -e "\nTo view the node logs, run: ${YELLOW}screen -r nexus${RESET}"
 echo -e "To detach from the screen session, press: ${YELLOW}Ctrl+A then D${RESET}"
+echo -e "To stop the Nexus node, use: ${YELLOW}kill \$(cat /root/nexus_pid.txt)${RESET}"
