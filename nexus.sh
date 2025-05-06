@@ -76,9 +76,13 @@ else
   screen -dmS nexus $HOME/start_nexus_node.sh || fail_exit "Failed to start Nexus CLI node in screen"
 fi
 
-# Now, start tailing the logs in the background without locking the session
-print_step "📑 Tailing Nexus logs in real-time in background..."
-screen -S nexus -X stuff "nohup tail -f $HOME/nexus_log.txt &$(echo -ne '\r')"
+# Automatically answering 'y' for the existing account prompt
+print_step "✅ Automatically answering 'y' for existing account usage..."
+screen -S nexus -X stuff "y$(echo -ne '\r')"
+
+# Use nohup to tail logs and ensure it runs in the background
+print_step "📑 Tailing Nexus logs in background using nohup..."
+nohup tail -f $HOME/nexus_log.txt &
 
 print_step "${GREEN}✅ Nexus CLI node setup complete!${RESET}"
 echo -e "\nTo view the node logs, run: ${YELLOW}screen -r nexus${RESET}"
