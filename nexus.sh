@@ -76,9 +76,9 @@ else
   screen -dmS nexus $HOME/start_nexus_node.sh || fail_exit "Failed to start Nexus CLI node in screen"
 fi
 
-# Now, tail the logs in real-time within the screen session
-print_step "📑 Tailing Nexus logs in real-time..."
-screen -S nexus -X stuff "tail -f $HOME/nexus_log.txt$(echo -ne '\r')"
+# Now, start tailing the logs in the background without locking the session
+print_step "📑 Tailing Nexus logs in real-time in background..."
+screen -S nexus -X stuff "nohup tail -f $HOME/nexus_log.txt &$(echo -ne '\r')"
 
 print_step "${GREEN}✅ Nexus CLI node setup complete!${RESET}"
 echo -e "\nTo view the node logs, run: ${YELLOW}screen -r nexus${RESET}"
