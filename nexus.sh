@@ -1,16 +1,15 @@
 #!/bin/bash
 
-# Color codes
-CYAN='\033[0;36m'
-LIGHTBLUE='\033[1;34m'
-RED='\033[1;31m'
-GREEN='\033[1;32m'
-PURPLE='\033[1;35m'
+# Colors
 YELLOW='\033[1;33m'
+GREEN='\033[1;32m'
+RED='\033[1;31m'
+CYAN='\033[0;36m'
 MAGENTA='\033[0;35m'
-BOLD='\033[1m'
 RESET='\033[0m'
+BOLD='\033[1m'
 
+# Clear screen and logo
 clear
 cat << "EOF"
        █████ █████   █████ ██████████ ███████████ ███████████
@@ -24,75 +23,45 @@ cat << "EOF"
 EOF
 
 echo -e "${YELLOW}${BOLD}🚀 Nexus CLI Node Installation Script${RESET}" 
-echo -e "📣 Telegram Group: ${MAGENTA}https://t.me/KatayanAirdropGnC${RESET}"
-echo
+echo -e "📣 Telegram: ${MAGENTA}https://t.me/KatayanAirdropGnC${RESET}"
 
-# Function to display steps
-print_step() {
-  echo -e "\n${CYAN}$1${RESET}"
-}
+echo -e "${CYAN}🔧 Updating system...${RESET}"
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y build-essential pkg-config libssl-dev git-all protobuf-compiler screen
 
-# Function to handle errors
-fail_exit() {
-  echo -e "${RED}❌ $1 failed. Exiting.${RESET}"
-  exit 1
-}
-
-# Update and install dependencies
-print_step "🔧 Updating system and installing dependencies..."
-sudo apt update && sudo apt upgrade -y || fail_exit "System update"
-sudo apt install -y build-essential pkg-config libssl-dev git-all protobuf-compiler screen || fail_exit "Dependency installation"
-
-# Install Rust
-print_step "🦀 Installing Rust..."
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y || fail_exit "Rust installation"
+echo -e "${CYAN}🦀 Installing Rust...${RESET}"
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 source $HOME/.cargo/env
 
-# Add riscv32i target to Rust
-print_step "🎯 Adding riscv32i target to Rust..."
-rustup target add riscv32i-unknown-none-elf || fail_exit "Adding riscv32i target"
+echo -e "${CYAN}🎯 Adding riscv32i Rust target...${RESET}"
+rustup target add riscv32i-unknown-none-elf
 
-# Install Nexus CLI
-print_step "📦 Installing Nexus CLI..."
-curl https://cli.nexus.xyz/ | sh || fail_exit "Nexus CLI installation"
+echo -e "${CYAN}📦 Installing Nexus CLI...${RESET}"
+curl https://cli.nexus.xyz/ | sh
 
-# Get Node ID
 read -p "🔑 Enter your Nexus Node ID (from app.nexus.xyz): " NODE_ID
+mkdir -p ~/.nexus
 echo "$NODE_ID" > ~/.nexus/node-id
 
-# Create start script
-print_step "📝 Creating Nexus node start script..."
-
+echo -e "${CYAN}📝 Creating Nexus start script...${RESET}"
 cat <<EOF > $HOME/start_nexus_node.sh
 #!/bin/bash
 cd \$HOME
-echo "Starting Nexus CLI Node..." > \$HOME/nexus_log.txt
-nexus >> \$HOME/nexus_log.txt 2>&1 &
+echo "🔁 Restarting Nexus CLI..." > \$HOME/nexus_log.txt
+while true; do
+  echo "[$(date)] Starting Nexus CLI Node..." >> \$HOME/nexus_log.txt
+  nexus >> \$HOME/nexus_log.txt 2>&1
+  echo "[$(date)] Nexus CLI crashed. Restarting in 5 seconds..." >> \$HOME/nexus_log.txt
+  sleep 5
+done
 EOF
 
-# Make the start script executable
 chmod +x $HOME/start_nexus_node.sh
 
-# Check for existing screen session and start if not present
-print_step "📟 Checking for existing 'nexus' screen session..."
-if screen -list | grep -q "nexus"; then
-  echo -e "${YELLOW}⚠️ Screen session 'nexus' already exists. Detaching...${RESET}"
-  screen -S nexus -X detach
-else
-  print_step "📟 Starting Nexus CLI node in a screen session..."
-  screen -dmS nexus $HOME/start_nexus_node.sh || fail_exit "Failed to start Nexus CLI node in screen"
-fi
+echo -e "${CYAN}📟 Launching node in a screen session...${RESET}"
+screen -dmS nexus bash $HOME/start_nexus_node.sh
 
-# Automatically answer 'y' to continue
-print_step "✅ Automatically answering 'y' for existing account usage..."
-screen -S nexus -X stuff "y$(echo -ne '\r')"
-
-# Use nohup to tail logs and ensure it runs in the background
-print_step "📑 Tailing Nexus logs in background using nohup..."
-nohup tail -f $HOME/nexus_log.txt &
-
-# Completion message
-print_step "${GREEN}✅ Nexus CLI node setup complete!${RESET}"
-echo -e "\nTo view the node logs, run: ${YELLOW}screen -r nexus${RESET}"
-echo -e "To detach from the screen session, press: ${YELLOW}Ctrl+A then D${RESET}"
-echo -e "To stop the Nexus node, use: ${YELLOW}kill \$(cat /root/nexus_pid.txt)${RESET}"
+echo -e "${GREEN}✅ Nexus node is now running in the background!${RESET}"
+echo -e "📄 View logs: ${YELLOW}tail -f \$HOME/nexus_log.txt${RESET}"
+echo -e "🧵 Reattach to screen: ${YELLOW}screen -r nexus${RESET}"
+echo -e "❌ Detach from screen: Press ${YELLOW}Ctrl+A then D${RESET}"
